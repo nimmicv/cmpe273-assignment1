@@ -1,5 +1,8 @@
 package edu.sjsu.cmpe.library.repository;
 
+import com.google.common.base.Optional;
+import com.yammer.dropwizard.jersey.params.LongParam;
+
 import edu.sjsu.cmpe.library.domain.Book;
 
 /**
@@ -18,6 +21,9 @@ public interface BookRepositoryInterface {
      * @return a newly created book instance with auto-generated ISBN
      */
     Book saveBook(Book newBook);
+    Book updateBook(Long isbn,String status);
+    
+    boolean deleteBook(Long isbn);
 
     /**
      * Retrieve an existing book by ISBN

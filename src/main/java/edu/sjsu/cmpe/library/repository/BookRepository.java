@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import edu.sjsu.cmpe.library.domain.Author;
 import edu.sjsu.cmpe.library.domain.Book;
 
 public class BookRepository implements BookRepositoryInterface {
@@ -13,6 +14,8 @@ public class BookRepository implements BookRepositoryInterface {
 
     /** Never access this key directly; instead use generateISBNKey() */
     private long isbnKey;
+   
+    
 
     public BookRepository(ConcurrentHashMap<Long, Book> bookMap) {
 	checkNotNull(bookMap, "bookMap must not be null for BookRepository");
@@ -30,6 +33,8 @@ public class BookRepository implements BookRepositoryInterface {
 	// increment existing isbnKey and return the new value
 	return Long.valueOf(++isbnKey);
     }
+    
+   
 
     /**
      * This will auto-generate unique ISBN for new books.
@@ -39,6 +44,16 @@ public class BookRepository implements BookRepositoryInterface {
 	checkNotNull(newBook, "newBook instance must not be null");
 	// Generate new ISBN
 	Long isbn = generateISBNKey();
+	AuthorRepository ar = new AuthorRepository();
+	if(newBook.getAuthors()!=null)
+	{
+		int length = newBook.getAuthors().size();
+		for(int i=0;i<length;i++)
+		{
+			Author author = newBook.getAuthors().get(i);
+			ar.saveAuthor(author);
+		}
+	}
 	newBook.setIsbn(isbn);
 	// TODO: create and associate other fields such as author
 
@@ -47,7 +62,31 @@ public class BookRepository implements BookRepositoryInterface {
 
 	return newBook;
     }
+    
+    public Book updateBook(Long isbn,String status)
+    {
+    	Book bk = bookInMemoryMap.get(isbn);
+    	if(bk != null)
+    	{
+    		bk.setStatus(status);
+    		return bk;
+    	}
+    	else
+    		return null;
+    }
 
+    public boolean deleteBook(Long isbn)
+    {
+    	Book bk = bookInMemoryMap.get(isbn);
+    	if(bk != null)
+    	{
+    		bookInMemoryMap.remove(isbn);
+    		return true;
+    	}
+    	else
+    		return false;
+    	
+    }
     /**
      * @see edu.sjsu.cmpe.library.repository.BookRepositoryInterface#getBookByISBN(java.lang.Long)
      */

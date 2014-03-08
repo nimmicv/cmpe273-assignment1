@@ -10,6 +10,7 @@ public class LinkDto {
      * @param href
      * @param method
      */
+    
     public LinkDto(String rel, String href, String method) {
 	super();
 	this.rel = rel;
