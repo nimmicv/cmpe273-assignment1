@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -41,6 +42,10 @@ public class ReviewResource {
 	public Response getReviews(@PathParam("isbn") LongParam isbn)
 	{
 		Book book = BookRes.getBookRepository().getBookByISBN(isbn.get());
+		if(book==null)
+		{
+			return Response.status(404).entity("Book not found").build();
+		}
 		List<Review> reviews = book.getReviews();
 		Map<Object,Object> map = new HashMap<Object,Object>();
 		map.put("reviews", reviews);
@@ -52,28 +57,37 @@ public class ReviewResource {
 	}
 	@GET
     @Path("/{id}")
-	public ReviewDto getReview(@PathParam("isbn") LongParam isbn,@PathParam("id") LongParam id)
+	public Response getReview(@PathParam("isbn") LongParam isbn,@PathParam("id") LongParam id)
 	{
 		Book book = BookRes.getBookRepository().getBookByISBN(isbn.get());
+		if(book==null)
+		{
+			return Response.status(404).entity("Book not found").build();
+		}
 		List<Review> reviews = book.getReviews();
 		
 		long thisid =id.get();
 		int newid = (int) (thisid-1);
 		Review review = reviews.get(newid);
+		if(review==null)
+		{
+			return Response.status(404).entity("Review not found").build();
+		}
 		ReviewDto reviewdto =new ReviewDto(review);
 		//Map<Object,Object> map = new HashMap<Object,Object>();
 		reviewdto.addLink(new LinkDto("view-Review", "/books/" + isbn.get() +"/reviews/"+thisid,
 			"GET"));
 		//map.put("review", authordto);
 		//map.put("links", authordto.getLinks());
-		return reviewdto;
+		//return reviewdto;
+		return Response.status(200).entity(reviewdto).build();
 		//return Response.status(200).entity(map).build();
 		
 		
 		//return null;
 	}
     @POST
-    public Response createReview(@PathParam("isbn") LongParam isbn,Review review)
+    public Response createReview(@PathParam("isbn") LongParam isbn,@Valid Review review)
 	{
     	Book book = BookRes.getBookRepository().getBookByISBN(isbn.get());
     	int id = (book.getReviews().size())+1; 

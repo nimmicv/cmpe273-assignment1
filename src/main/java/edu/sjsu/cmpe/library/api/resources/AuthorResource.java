@@ -37,6 +37,10 @@ private BookResource BookRes;
 	public Response getAuthors(@PathParam("isbn") LongParam isbn)
 	{
 		Book book = BookRes.getBookRepository().getBookByISBN(isbn.get());
+		if(book==null)
+		{
+			return Response.status(404).entity("Book not found").build();
+		}
 		List<Author> authors = book.getAuthors();
 		Map<Object,Object> map = new HashMap<Object,Object>();
 		map.put("authors", authors);
@@ -47,21 +51,30 @@ private BookResource BookRes;
 	}
 	@GET
     @Path("/{id}")
-	public AuthorDto getAuthor(@PathParam("isbn") LongParam isbn,@PathParam("id") LongParam id)
+	public Response getAuthor(@PathParam("isbn") LongParam isbn,@PathParam("id") LongParam id)
 	{
 		Book book = BookRes.getBookRepository().getBookByISBN(isbn.get());
+		if(book==null)
+		{
+			return Response.status(404).entity("Book not found").build();
+		}
 		List<Author> authors = book.getAuthors();
 		
 		long thisid =id.get();
 		int newid = (int) thisid;
 		Author author = authors.get(newid);
+		if(author==null)
+		{
+			return Response.status(404).entity("Author not found").build();
+		}
 		AuthorDto authordto =new AuthorDto(author);
 		//Map<Object,Object> map = new HashMap<Object,Object>();
 		authordto.addLink(new LinkDto("view-Review", "/books/" + isbn.get() +"/authors/"+newid,
 			"GET"));
 		//map.put("author", author);
 		//map.put("links", authordto.getLinks());
-		return authordto;
+		return Response.status(404).entity(authordto).build();
+		
 		//return Response.status(200).entity(map).build();
 		
 		//return null;

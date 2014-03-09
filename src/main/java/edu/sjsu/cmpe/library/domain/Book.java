@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -74,7 +75,7 @@ public boolean isvalidstatus(String status)
 		return reviews;
 	}
 
-	public void setReviews(List<Review> reviews) {
+	public void setReviews(@Valid List<Review> reviews) {
 		this.reviews = reviews;
 	}
 
