@@ -13,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 
+
+
 public class Book {
     private long isbn;
     @NotEmpty
@@ -29,6 +31,41 @@ public class Book {
     private List<Author> authors= new ArrayList<Author>();
     @JsonIgnoreProperties
     private List<Review> reviews=new ArrayList<Review>();
+    private Date lastupdated;
+    
+   public Date getLastupdated() {
+		return lastupdated;
+	}
+
+
+	public void setLastupdated(Date lastupdated) {
+		this.lastupdated = lastupdated;
+	}
+
+
+
+
+public boolean isvalidstatus(String status)
+   {
+	int flag =0;
+	String[] values = {"available" , "lost","in-queue","checked-out"};
+   	for(String s : values)
+   	{
+   		if(status.equals(s))
+   		{
+   			flag =1;
+   			break;
+   		}
+   	}
+   	if(flag == 0)
+   	{
+   		return false;
+   	}
+   	else
+   	{
+   		return true;
+   	}
+   }
     
 
     
@@ -54,7 +91,10 @@ public class Book {
 	}
 
 	public void setStatus(String status) {
+		
+    
 		this.status = status;
+		
 	}
 
 	public String getPublication_date() {

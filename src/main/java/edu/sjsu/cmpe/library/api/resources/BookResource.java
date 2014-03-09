@@ -1,6 +1,7 @@
 package edu.sjsu.cmpe.library.api.resources;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -11,8 +12,18 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Request;
+
+
+
+
+
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import java.util.*;
 
@@ -21,7 +32,6 @@ import com.yammer.dropwizard.jersey.params.LongParam;
 import com.yammer.metrics.annotation.Timed;
 
 import edu.sjsu.cmpe.library.domain.Author;
-import edu.sjsu.cmpe.library.domain.Status;
 import edu.sjsu.cmpe.library.domain.Book;
 import edu.sjsu.cmpe.library.domain.Review;
 import edu.sjsu.cmpe.library.dto.BookDto;
@@ -57,8 +67,26 @@ public class BookResource {
     @GET
     @Path("/{isbn}")
     @Timed(name = "view-book")
-    public Response getBookByIsbn(@PathParam("isbn") LongParam isbn) {
+    public Response getBookByIsbn(@Context HttpHeaders httpHeaders,@Context Request request,@PathParam("isbn") LongParam isbn) {
+    	
+    	httpHeaders.getRequestHeaders();
+    	
 	Book book = bookRepository.getBookByISBN(isbn.get());
+	if(book==null)
+	{
+		return Response.status(404).entity("Book not Found").build();
+	}
+	EntityTag etag = computeEtagForBook(book); 
+	//Date expirationDate = new Date(System.currentTimeMillis() + 3000);
+	
+	Response.ResponseBuilder responseBuilder = request.evaluatePreconditions(book.getLastupdated());
+
+    if (responseBuilder != null) {
+      // Etag match
+     //("Book has not changed..returning unmodified response code");
+    	responseBuilder.entity("Fetch from cache");
+      return responseBuilder.build();
+    }
 	BookDto bookResponse = new BookDto(book);
 	bookResponse.addLink(new LinkDto("view-book", "/books/" + book.getIsbn(),
 		"GET"));
@@ -97,13 +125,18 @@ public class BookResource {
 	Map<Object,Object> Responsemap = new HashMap<Object,Object>();
 	Responsemap.put("books", map);
 	Responsemap.put("links", bookResponse.getLinks());
-	return Response.status(200).entity(Responsemap).build();
+	responseBuilder = Response.ok(Responsemap).tag(etag);
+	return responseBuilder.build();
     }
+    
+    private EntityTag computeEtagForBook(Book book) {
+        return new EntityTag(""+book.getLastupdated().getTime());// + book.getLastupdated().getTime());
+      }
 
     @POST
     @Timed(name = "create-book")
-   
-    public Response createBook(Book request) {
+    @NotNull(message = "{request.empty.means}")
+    public Response createBook(@NotNull Book request) {
     	int errorFlag =0;
     	Map<Object,Object> errorMap = new HashMap<Object,Object>();
     	errorMap.put("Error Code" , 400);
@@ -179,9 +212,14 @@ public class BookResource {
     @DELETE
     @Path("/{isbn}")
     @Timed(name = "delete-book")
+    @NotNull(message = "{book.does.not.exist}")
     public Response deleteBook(@PathParam("isbn") LongParam isbn)
     {
     	boolean bn = bookRepository.deleteBook(isbn.get());
+    	if(!bn)
+    	{
+    		return Response.status(404).entity("Book Not Found").build();
+    	}
 		LinkDto ldt = new LinkDto("create-book","/books","POST");
 		Map<String,LinkDto> map = new HashMap<String,LinkDto>();
 		map.put("links", ldt);

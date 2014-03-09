@@ -2,13 +2,16 @@ package edu.sjsu.cmpe.library.domain;
 
 import javax.validation.constraints.Min;
 
+import org.hibernate.validator.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Range;
 
 public class Review {
 	
 	private long id;
 	@Range(min=1,max=5)
+	@NotEmpty
 	private long rating;
+	@NotEmpty
 	private String comment;
 	
 	public long getId() {

@@ -3,6 +3,7 @@ package edu.sjsu.cmpe.library.repository;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 import edu.sjsu.cmpe.library.domain.Author;
@@ -55,6 +56,7 @@ public class BookRepository implements BookRepositoryInterface {
 		}
 	}
 	newBook.setIsbn(isbn);
+	newBook.setLastupdated(new Date());
 	// TODO: create and associate other fields such as author
 
 	// Finally, save the new book into the map
@@ -69,6 +71,7 @@ public class BookRepository implements BookRepositoryInterface {
     	if(bk != null)
     	{
     		bk.setStatus(status);
+    		bk.setLastupdated(new Date());
     		return bk;
     	}
     	else
