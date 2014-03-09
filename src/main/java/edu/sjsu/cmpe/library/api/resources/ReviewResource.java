@@ -87,9 +87,22 @@ public class ReviewResource {
 		//return null;
 	}
     @POST
-    public Response createReview(@PathParam("isbn") LongParam isbn,@Valid Review review)
+    public Response createReview(@PathParam("isbn") LongParam isbn,Review review)
 	{
     	Book book = BookRes.getBookRepository().getBookByISBN(isbn.get());
+    	if(book==null)
+		{
+			return Response.status(404).entity("Book not found").build();
+		}
+    	if(review.getRating()<1 && review.getRating()>5)
+    	{
+    		return Response.status(200).entity("Rating is invalid or null").build();
+    	}
+    	if(review.getComment()==null)
+    	{
+    		return Response.status(200).entity("Comment cannot be null").build();
+    	}
+    		
     	int id = (book.getReviews().size())+1; 
         review.setId(id);
         book.getReviews().add(review);
